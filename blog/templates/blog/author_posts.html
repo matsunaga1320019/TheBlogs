@@ -1,0 +1,19 @@
+{% extends "blog/base.html" %}
+
+{% block title %}Posts by {{ author.name }} - TheBlogs{% endblock %}
+
+{% block content %}
+<h2>Posts by {{ author.name }}</h2>
+{% if posts %}
+<ul>
+    {% for post in posts %}
+    <li>
+        <a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a>
+        <p>{{ post.created_at }}</p>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No posts by this author yet.</p>
+{% endif %}
+{% endblock %}

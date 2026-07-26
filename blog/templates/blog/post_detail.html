@@ -1,0 +1,10 @@
+{% extends "blog/base.html" %}
+
+{% block title %}{{ post.title }} - TheBlogs{% endblock %}
+
+{% block content %}
+<h2>{{ post.title }}</h2>
+<p>By {{ post.author.name }} on {{ post.created_at }}</p>
+<div>{{ post.content }}</div>
+<p><a href="{% url 'index' %}">Back to all posts</a></p>
+{% endblock %}
