@@ -5,13 +5,14 @@
 {% block content %}
 <h2>All Posts</h2>
 
-<form class="search-form" role="search" aria-label="Search posts">
+<form class="search-form" method="get" action="{% url 'index' %}" role="search" aria-label="Search posts">
     <div class="form-row">
         <label for="q">Search by title</label>
         <input
             type="search"
             id="q"
             name="q"
+            value="{{ query|default:'' }}"
             placeholder="Search posts..."
             hx-get="{% url 'search_posts' %}"
             hx-trigger="keyup changed delay:300ms, search"
