@@ -34,6 +34,15 @@ class TestIndexView:
         posts = list(response.context["posts"])
         assert posts == []
 
+    def test_filters_by_query_without_js(self, client):
+        user = User.objects.create_user(username="u1")
+        author = Author.objects.create(user=user, name="Alice")
+        match = Post.objects.create(title="Django Tips", content="x", author=author)
+        Post.objects.create(title="Cooking", content="y", author=author)
+        response = client.get("/", {"q": "django"})
+        posts = list(response.context["posts"])
+        assert posts == [match]
+
 
 @pytest.mark.django_db
 class TestPostDetailView:
@@ -169,6 +178,7 @@ class TestSearchPostsView:
     def test_uses_partial_template_without_full_page_chrome(self, client):
         response = client.get("/search/")
         assert b"<html" not in response.content
+
     def test_get_returns_200(self, client):
         response = client.get("/signup/")
         assert response.status_code == 200

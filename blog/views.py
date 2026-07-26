@@ -7,8 +7,11 @@ from .models import Author, Post
 
 
 def index(request):
+    query = request.GET.get("q", "").strip()
     posts = Post.objects.select_related("author").all()
-    return render(request, "blog/post_list.html", {"posts": posts})
+    if query:
+        posts = posts.filter(title__icontains=query)
+    return render(request, "blog/post_list.html", {"posts": posts, "query": query})
 
 
 def search_posts(request):
