@@ -4,21 +4,24 @@
 
 {% block content %}
 <h2>All Posts</h2>
-{% if posts %}
-<ul class="post-list">
-    {% for post in posts %}
-    <li>
-        <article class="post-summary" aria-labelledby="post-title-{{ post.pk }}">
-            <h3 id="post-title-{{ post.pk }}"><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h3>
-            <p class="post-meta">
-                By <a href="{% url 'author_posts' post.author.pk %}">{{ post.author.name }}</a>
-                on <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at }}</time>
-            </p>
-        </article>
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>No posts yet.</p>
-{% endif %}
+
+<form class="search-form" role="search" aria-label="Search posts">
+    <div class="form-row">
+        <label for="q">Search by title</label>
+        <input
+            type="search"
+            id="q"
+            name="q"
+            placeholder="Search posts..."
+            hx-get="{% url 'search_posts' %}"
+            hx-trigger="keyup changed delay:300ms, search"
+            hx-target="#post-results"
+            hx-swap="innerHTML"
+        >
+    </div>
+</form>
+
+<div id="post-results">
+    {% include "blog/_post_results.html" %}
+</div>
 {% endblock %}

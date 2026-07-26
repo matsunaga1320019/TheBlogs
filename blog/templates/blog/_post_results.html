@@ -1,0 +1,17 @@
+{% if posts %}
+<ul class="post-list">
+    {% for post in posts %}
+    <li>
+        <article class="post-summary" aria-labelledby="post-title-{{ post.pk }}">
+            <h3 id="post-title-{{ post.pk }}"><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h3>
+            <p class="post-meta">
+                By <a href="{% url 'author_posts' post.author.pk %}">{{ post.author.name }}</a>
+                on <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at }}</time>
+            </p>
+        </article>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No posts found.</p>
+{% endif %}
