@@ -21,9 +21,7 @@ class TestPostModel:
     def test_str_returns_title(self):
         user = User.objects.create_user(username="jdoe")
         author = Author.objects.create(user=user, name="Jane Doe")
-        post = Post.objects.create(
-            title="My Post", content="Hello", author=author
-        )
+        post = Post.objects.create(title="My Post", content="Hello", author=author)
         assert str(post) == "My Post"
 
     def test_default_ordering_newest_first(self):
