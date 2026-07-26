@@ -111,6 +111,14 @@ class TestNewPostView:
         assert post.content == "C"
         assert post.author.name == "Alice"
 
+    def test_post_without_author_returns_200_and_no_post(self, client):
+        assert Author.objects.count() == 0
+        assert Post.objects.count() == 0
+        response = client.post("/new/", {"title": "T", "content": "C"})
+        assert response.status_code == 200
+        assert Post.objects.count() == 0
+        assert b"No author available yet" in response.content
+
 
 @pytest.mark.django_db
 class TestSignupView:

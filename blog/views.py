@@ -21,9 +21,15 @@ def author_posts(request, author_id):
 
 def new_post(request):
     if request.method == "POST":
+        author = Author.objects.first()
+        if author is None:
+            return render(
+                request,
+                "blog/new_post.html",
+                {"error": "No author available yet. An admin must create one first."},
+            )
         title = request.POST.get("title", "")
         content = request.POST.get("content", "")
-        author = Author.objects.first()
         Post.objects.create(title=title, content=content, author=author)
         return redirect("index")
     return render(request, "blog/new_post.html")
