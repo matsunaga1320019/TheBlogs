@@ -136,7 +136,39 @@ class TestNewPostView:
 
 
 @pytest.mark.django_db
-class TestSignupView:
+class TestSearchPostsView:
+    def test_returns_200(self, client):
+        response = client.get("/search/")
+        assert response.status_code == 200
+
+    def test_no_query_returns_all_posts(self, client):
+        user = User.objects.create_user(username="u1")
+        author = Author.objects.create(user=user, name="Alice")
+        Post.objects.create(title="Alpha", content="x", author=author)
+        Post.objects.create(title="Beta", content="y", author=author)
+        response = client.get("/search/")
+        assert list(response.context["posts"]).__len__() == 2
+
+    def test_filters_by_title_case_insensitive(self, client):
+        user = User.objects.create_user(username="u1")
+        author = Author.objects.create(user=user, name="Alice")
+        match = Post.objects.create(title="Django Tips", content="x", author=author)
+        Post.objects.create(title="Cooking", content="y", author=author)
+        response = client.get("/search/", {"q": "django"})
+        posts = list(response.context["posts"])
+        assert posts == [match]
+
+    def test_no_match_returns_empty(self, client):
+        user = User.objects.create_user(username="u1")
+        author = Author.objects.create(user=user, name="Alice")
+        Post.objects.create(title="Alpha", content="x", author=author)
+        response = client.get("/search/", {"q": "zzz-no-match"})
+        assert list(response.context["posts"]) == []
+        assert b"No posts found." in response.content
+
+    def test_uses_partial_template_without_full_page_chrome(self, client):
+        response = client.get("/search/")
+        assert b"<html" not in response.content
     def test_get_returns_200(self, client):
         response = client.get("/signup/")
         assert response.status_code == 200

@@ -11,6 +11,14 @@ def index(request):
     return render(request, "blog/post_list.html", {"posts": posts})
 
 
+def search_posts(request):
+    query = request.GET.get("q", "").strip()
+    posts = Post.objects.select_related("author").all()
+    if query:
+        posts = posts.filter(title__icontains=query)
+    return render(request, "blog/_post_results.html", {"posts": posts})
+
+
 def post_detail(request, pk):
     post = get_object_or_404(Post.objects.select_related("author"), pk=pk)
     return render(request, "blog/post_detail.html", {"post": post})
