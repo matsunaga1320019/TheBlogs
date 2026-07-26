@@ -1,5 +1,8 @@
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
+from .forms import PostForm, SignupForm
 from .models import Author, Post
 
 
@@ -19,23 +22,28 @@ def author_posts(request, author_id):
     return render(request, "blog/author_posts.html", {"author": author, "posts": posts})
 
 
+@login_required
 def new_post(request):
     if request.method == "POST":
-        author = Author.objects.first()
-        if author is None:
-            return render(
-                request,
-                "blog/new_post.html",
-                {"error": "No author available yet. An admin must create one first."},
-            )
-        title = request.POST.get("title", "")
-        content = request.POST.get("content", "")
-        Post.objects.create(title=title, content=content, author=author)
-        return redirect("index")
-    return render(request, "blog/new_post.html")
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user.author
+            post.save()
+            return redirect("index")
+    else:
+        form = PostForm()
+    return render(request, "blog/new_post.html", {"form": form})
 
 
 def signup(request):
     if request.method == "POST":
-        return redirect("index")
-    return render(request, "blog/signup.html")
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            Author.objects.create(user=user, name=user.username)
+            login(request, user)
+            return redirect("index")
+    else:
+        form = SignupForm()
+    return render(request, "blog/signup.html", {"form": form})
