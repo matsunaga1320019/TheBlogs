@@ -5,11 +5,16 @@
 {% block content %}
 <h2>All Posts</h2>
 {% if posts %}
-<ul>
+<ul class="post-list">
     {% for post in posts %}
     <li>
-        <a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a>
-        <p>By {{ post.author.name }} on {{ post.created_at }}</p>
+        <article class="post-summary" aria-labelledby="post-title-{{ post.pk }}">
+            <h3 id="post-title-{{ post.pk }}"><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h3>
+            <p class="post-meta">
+                By <a href="{% url 'author_posts' post.author.pk %}">{{ post.author.name }}</a>
+                on <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at }}</time>
+            </p>
+        </article>
     </li>
     {% endfor %}
 </ul>
