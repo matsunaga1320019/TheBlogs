@@ -94,13 +94,22 @@ class TestAuthorPostsView:
 
 @pytest.mark.django_db
 class TestNewPostView:
-    def test_get_returns_200(self, client):
+    def test_get_redirects_to_login_when_anonymous(self, client):
+        response = client.get("/new/")
+        assert response.status_code == 302
+        assert response.url.startswith("/login/")
+
+    def test_get_returns_200_when_logged_in(self, client):
+        user = User.objects.create_user(username="u1", password="pw12345")
+        Author.objects.create(user=user, name="Alice")
+        client.login(username="u1", password="pw12345")
         response = client.get("/new/")
         assert response.status_code == 200
 
     def test_post_creates_post_and_redirects(self, client):
-        user = User.objects.create_user(username="u1")
+        user = User.objects.create_user(username="u1", password="pw12345")
         Author.objects.create(user=user, name="Alice")
+        client.login(username="u1", password="pw12345")
         assert Post.objects.count() == 0
         response = client.post("/new/", {"title": "T", "content": "C"})
         assert response.status_code == 302
@@ -111,13 +120,19 @@ class TestNewPostView:
         assert post.content == "C"
         assert post.author.name == "Alice"
 
-    def test_post_without_author_returns_200_and_no_post(self, client):
-        assert Author.objects.count() == 0
-        assert Post.objects.count() == 0
-        response = client.post("/new/", {"title": "T", "content": "C"})
+    def test_post_with_blank_title_returns_200_and_no_post(self, client):
+        user = User.objects.create_user(username="u1", password="pw12345")
+        Author.objects.create(user=user, name="Alice")
+        client.login(username="u1", password="pw12345")
+        response = client.post("/new/", {"title": "", "content": "C"})
         assert response.status_code == 200
         assert Post.objects.count() == 0
-        assert b"No author available yet" in response.content
+
+    def test_post_without_login_redirects_and_no_post(self, client):
+        response = client.post("/new/", {"title": "T", "content": "C"})
+        assert response.status_code == 302
+        assert response.url.startswith("/login/")
+        assert Post.objects.count() == 0
 
 
 @pytest.mark.django_db
@@ -126,11 +141,34 @@ class TestSignupView:
         response = client.get("/signup/")
         assert response.status_code == 200
 
-    def test_post_redirects_without_creating_user(self, client):
+    def test_post_creates_user_author_and_redirects(self, client):
         assert User.objects.count() == 0
         assert Author.objects.count() == 0
-        response = client.post("/signup/", {"username": "new"})
+        response = client.post(
+            "/signup/",
+            {
+                "username": "newuser",
+                "email": "new@example.com",
+                "password1": "a-strong-pw-93",
+                "password2": "a-strong-pw-93",
+            },
+        )
         assert response.status_code == 302
         assert response.url == "/"
+        assert User.objects.count() == 1
+        assert Author.objects.count() == 1
+        assert Author.objects.first().name == "newuser"
+
+    def test_post_with_mismatched_passwords_creates_nothing(self, client):
+        response = client.post(
+            "/signup/",
+            {
+                "username": "newuser",
+                "email": "new@example.com",
+                "password1": "a-strong-pw-93",
+                "password2": "different",
+            },
+        )
+        assert response.status_code == 200
         assert User.objects.count() == 0
         assert Author.objects.count() == 0

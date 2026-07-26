@@ -1,9 +1,9 @@
 {% extends "blog/base.html" %}
 
-{% block title %}Signup - TheBlogs{% endblock %}
+{% block title %}Log in - TheBlogs{% endblock %}
 
 {% block content %}
-<h2>Signup</h2>
+<h2>Log in</h2>
 <form method="post" novalidate>
     {% csrf_token %}
     {{ form.non_field_errors }}
@@ -11,10 +11,9 @@
     <div class="form-row">
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
         {{ field }}
-        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
         {{ field.errors }}
     </div>
     {% endfor %}
-    <button type="submit">Sign up</button>
+    <button type="submit">Log in</button>
 </form>
 {% endblock %}
